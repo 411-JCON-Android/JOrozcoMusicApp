@@ -15,8 +15,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -81,14 +83,22 @@ fun HomeScreen(navController: NavController) {
         }
     }
 
-    Column(
+    // Un único LazyColumn evita conflictos de scroll con el LazyRow de Albums.
+    // Cada sección es un item; los álbumes de Recently Played se renderizan con items().
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(HomeBackground)
             .statusBarsPadding()
     ) {
-        HomeHeader()
-        AlbumsSection(albums, isLoading, error, navController)
+        item { HomeHeader() }
+        item { AlbumsSection(albums, isLoading, error, navController) }
+        item { RecentlyPlayedHeader() }
+        items(albums) { album ->
+            RecentlyPlayedItem(album) {
+                navController.navigate(AlbumDetailRoute(album.id))
+            }
+        }
     }
 }
 
@@ -263,6 +273,81 @@ fun AlbumCarouselCard(album: Album, onClick: () -> Unit) {
                     }
                 }
             }
+        }
+    }
+}
+
+// ─── Recently Played ──────────────────────────────────────────────────────────
+
+// Fila de título "Recently Played" y enlace "See more".
+@Composable
+fun RecentlyPlayedHeader() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = "Recently Played", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+        Text(text = "See more", fontSize = 14.sp, color = PurpleAccent)
+    }
+}
+
+// Ítem individual de la lista Recently Played: card blanca con imagen, título, artista y menú.
+@Composable
+fun RecentlyPlayedItem(album: Album, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Imagen cuadrada redondeada a la izquierda
+            AsyncImage(
+                model = rememberImageRequest(LocalContext.current, album.image),
+                contentDescription = album.title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(RoundedCornerShape(10.dp))
+            )
+
+            Spacer(modifier = Modifier.width(14.dp))
+
+            // Título y subtítulo "Artista • Popular Song"
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = album.title,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    maxLines = 1
+                )
+                Text(
+                    text = "${album.artist} • Popular Song",
+                    fontSize = 13.sp,
+                    color = Color.Gray,
+                    maxLines = 1
+                )
+            }
+
+            // Ícono de tres puntos a la derecha
+            Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription = "Opciones",
+                tint = Color.Gray,
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }
