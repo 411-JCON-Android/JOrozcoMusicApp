@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.jorozcomusicapp.navigation.AlbumDetailRoute
 import com.example.jorozcomusicapp.navigation.HomeRoute
+import com.example.jorozcomusicapp.ui.screens.HomeScreen
 import com.example.jorozcomusicapp.ui.theme.JOrozcoMusicAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -31,14 +32,8 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     startDestination = HomeRoute
                 ) {
-                    // Destino Home — se implementará en Fase 2–5
                     composable<HomeRoute> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("Home Screen — Fase 2 próximamente")
-                        }
+                        HomeScreen(navController)
                     }
 
                     // Destino Detail — se implementará en Fase 6–8
