@@ -25,7 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -228,8 +228,8 @@ fun DetailHeader(album: Album, navController: NavController) {
                     filled = true
                 )
                 DetailActionButton(
-                    icon = Icons.Default.Pause,
-                    description = "Pause",
+                    icon = Icons.Default.Shuffle,
+                    description = "Shuffle",
                     filled = false
                 )
             }
