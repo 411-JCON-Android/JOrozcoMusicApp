@@ -7,9 +7,9 @@ import kotlinx.serialization.Serializable
 // @Serializable es requerido por Navigation 2.8 para pasar objetos entre rutas.
 @Serializable
 data class Album(
-    val id: Int,
+    val id: String,           // MongoDB ObjectId — llega como string
     val title: String,
     val artist: String,
-    val cover: String,
+    val image: String = "",   // URL de la portada del álbum
     val description: String? = null
 )

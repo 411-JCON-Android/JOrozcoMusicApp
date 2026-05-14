@@ -12,5 +12,5 @@ interface AlbumApiService {
 
     // Obtiene un álbum específico para la pantalla Detail.
     @GET("api/albums/{id}")
-    suspend fun getAlbumById(@Path("id") id: Int): Album
+    suspend fun getAlbumById(@Path("id") id: String): Album
 }
