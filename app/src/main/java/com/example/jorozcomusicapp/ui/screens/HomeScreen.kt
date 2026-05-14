@@ -18,11 +18,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
@@ -30,6 +30,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -56,6 +57,8 @@ import coil.request.ImageRequest
 import com.example.jorozcomusicapp.data.api.RetrofitInstance
 import com.example.jorozcomusicapp.data.model.Album
 import com.example.jorozcomusicapp.navigation.AlbumDetailRoute
+import com.example.jorozcomusicapp.ui.components.MiniPlayer
+import com.example.jorozcomusicapp.ui.components.buildImageRequest
 
 // Color de fondo general de la pantalla Home
 val HomeBackground = Color(0xFFEEE8FD)
@@ -83,20 +86,35 @@ fun HomeScreen(navController: NavController) {
         }
     }
 
-    // Un único LazyColumn evita conflictos de scroll con el LazyRow de Albums.
-    // Cada sección es un item; los álbumes de Recently Played se renderizan con items().
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(HomeBackground)
-            .statusBarsPadding()
-    ) {
-        item { HomeHeader() }
-        item { AlbumsSection(albums, isLoading, error, navController) }
-        item { RecentlyPlayedHeader() }
-        items(albums) { album ->
-            RecentlyPlayedItem(album) {
-                navController.navigate(AlbumDetailRoute(album.id))
+    // Estado de reproducción — solo visual, sin audio real
+    var isPlaying by remember { mutableStateOf(false) }
+
+    // Scaffold provee el slot bottomBar donde vive el mini reproductor fijo
+    Scaffold(
+        containerColor = HomeBackground,
+        bottomBar = {
+            MiniPlayer(
+                album = albums.firstOrNull(),
+                isPlaying = isPlaying,
+                onPlayPause = { isPlaying = !isPlaying }
+            )
+        }
+    ) { innerPadding ->
+        // Un único LazyColumn evita conflictos de scroll con el LazyRow de Albums.
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(HomeBackground)
+                .statusBarsPadding()
+                .padding(bottom = innerPadding.calculateBottomPadding())
+        ) {
+            item { HomeHeader() }
+            item { AlbumsSection(albums, isLoading, error, navController) }
+            item { RecentlyPlayedHeader() }
+            items(albums) { album ->
+                RecentlyPlayedItem(album) {
+                    navController.navigate(AlbumDetailRoute(album.id))
+                }
             }
         }
     }
@@ -352,16 +370,7 @@ fun RecentlyPlayedItem(album: Album, onClick: () -> Unit) {
     }
 }
 
-// ─── Helper de imagen ─────────────────────────────────────────────────────────
-
-// Construye un ImageRequest con los headers que Wikipedia requiere y fuerza HTTPS
-// para evitar que Android 9+ bloquee URLs con http://.
-fun rememberImageRequest(context: Context, url: String): ImageRequest {
-    val secureUrl = if (url.startsWith("http://")) url.replace("http://", "https://") else url
-    return ImageRequest.Builder(context)
-        .data(secureUrl)
-        .addHeader("User-Agent", "JOrozcoMusicApp/1.0 (Android)")
-        .addHeader("Referer", "https://en.wikipedia.org/")
-        .crossfade(true)
-        .build()
-}
+// rememberImageRequest es un alias local de buildImageRequest (definido en MiniPlayer.kt)
+// para no duplicar la lógica de headers de Wikipedia.
+fun rememberImageRequest(context: Context, url: String): ImageRequest =
+    buildImageRequest(context, url)
